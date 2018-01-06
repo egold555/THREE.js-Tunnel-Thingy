@@ -128,13 +128,17 @@ function createTunnelMesh(geom) {
     return new THREE.Mesh(geom, material);
 }
 
-var lastVol = -1;
+function pulse(twoD){
+    //console.log("PULSE!");
+    twoD.fillStyle = '#00FF00';
+    twoD.fillText("█                         █", 10, 70);
+}
 
+var maxNum = 0;
 function render() {
 
     analyser.getByteFrequencyData(frequencyData);
     twoD.clearRect(0, 0, canvas.width, canvas.height);
-    var maxHeight = 0;
     var bars = frequencyData.length;
     for (var i = 0; i < bars; i++) {
         var bar_x = i * 3;
@@ -155,12 +159,19 @@ function render() {
     var smoo = Smooth(frequencyData);
     
     var avgVolume = smoo(1) / frequencyData.length;
-    //avgVolume = avgVolume * 0.005;
-    console.log(avgVolume);
-
+    
+    avgVolume = avgVolume + 0.7; //0.7
+    
     twoD.font = "30px Arial";
+    if(avgVolume > maxNum){maxNum = avgVolume;}
+    
+    if(avgVolume >= 0.9){
+        pulse(twoD);
+    }
+
     twoD.fillStyle = '#FFCC00';
     twoD.fillText(avgVolume, 50, 50);
+    twoD.fillText(maxNum, 50, 100);
 
 
     if (cameraTravelledStep > 1 - cameraTravelIncrement) {
