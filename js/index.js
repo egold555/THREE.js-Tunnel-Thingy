@@ -42,6 +42,7 @@ window.onload = function () {
 
 function setupAudioAnalizer(audio) {
     var ctx = new AudioContext();
+
     var audioSrc = ctx.createMediaElementSource(audio);
     analyser = ctx.createAnalyser();
 
@@ -51,7 +52,7 @@ function setupAudioAnalizer(audio) {
 
     // frequencyBinCount tells you how many values you'll receive from the analyser
     frequencyData = new Uint8Array(analyser.frequencyBinCount);
-    //audio.play();
+    audio.play();
 }
 
 function setupTunnel() {
@@ -109,10 +110,10 @@ function createTunnelMesh(geom) {
         transparent: false,
         opacity: 1,
         side: THREE.DoubleSide,
-        wireframe: false,
+        wireframe: true,
         vertexColors: THREE.FaceColors
     });
-    
+
     var currentColor;
     for (var i = 0; i < geom.faces.length; i++) {
         if (i % 160 == 0) {
@@ -127,6 +128,8 @@ function createTunnelMesh(geom) {
     return new THREE.Mesh(geom, material);
 }
 
+var lastVol = -1;
+
 function render() {
 
     analyser.getByteFrequencyData(frequencyData);
@@ -140,16 +143,24 @@ function render() {
 
         twoD.fillStyle = '#00CCFF';
 
-        if (bar_height > maxHeight) { //detect highest peaks?
+        /*if (bar_height > maxHeight) { //detect highest peaks?
             maxHeight = bar_height;
             twoD.fillStyle = '#FFCC00';
-        }
+        }*/
 
         twoD.fillRect(bar_x, canvas.height, bar_width, -bar_height);
     }
 
-    //tunnel.material.color.setHex(0xccff00);
-    //console.log(frequencyData);
+
+    var sum = frequencyData.reduce((previous, current) => current += previous);
+    var avgVolume = sum / frequencyData.length;
+    avgVolume = avgVolume * 0.005;
+    console.log(avgVolume);
+
+    twoD.font = "30px Arial";
+    twoD.fillStyle = '#FFCC00';
+    twoD.fillText(avgVolume, 50, 50);
+
 
     if (cameraTravelledStep > 1 - cameraTravelIncrement) {
         cameraTravelledStep = 0.0;
@@ -161,6 +172,10 @@ function render() {
     camera.lookAt(pos2);
 
     camera.rotation.z = -Math.PI / 2 + (Math.sin(cameraRotationStep) * Math.PI);
+
+    camera.zoom=avgVolume;
+    //camera.fov = avgVolume + 45;
+    camera.updateProjectionMatrix();
 
     cameraTravelledStep += cameraTravelIncrement;
     cameraRotationStep += cameraRotationIncrement;
