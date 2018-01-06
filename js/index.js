@@ -1,15 +1,25 @@
-var canvas, twoD, bars;
+'use strict';
+/*jslint browser: true*/
+/*global  $*/
+/*global  THREE*/
+/*global window*/
+/*global document*/
+/*global AudioContext*/
+/*global Uint8Array*/
+/*global requestAnimationFrame*/
+/*jsint node: true */
+
+
+var canvas, twoD;
 
 var analyser, frequencyData, audio;
 
-var tunnel, scene, camera, webGHRenderer, 
-// Distance travelled in the tunnel by the camera
-cameraTravelledStep=1, 
-// Camera rotation around its z-axis (moving through the tunnel)
-cameraRotationStep=0.0,
-spline, cameraTravelIncrement = 0.0002, cameraRotationIncrement = 0.0025;
+var tunnel, scene, camera, webGLRenderer, cameraTravelledStep = 1, // Distance travelled in the tunnel by the camera
+    cameraRotationStep = 0.0, // Camera rotation around its z-axis (moving through the tunnel)
+    spline, cameraTravelIncrement = 0.0002,
+    cameraRotationIncrement = 0.0025;
 
-window.onload = function() {
+window.onload = function () {
 
     audio = document.getElementById('myAudio');
     setupAudioAnalizer(audio);
@@ -18,7 +28,10 @@ window.onload = function() {
     twoD = canvas.getContext('2d');
 
     setupTunnel();
-    $(window).resize(function() {
+
+
+
+    $(window).resize(function () {
         resize();
     });
 
@@ -38,7 +51,7 @@ function setupAudioAnalizer(audio) {
 
     // frequencyBinCount tells you how many values you'll receive from the analyser
     frequencyData = new Uint8Array(analyser.frequencyBinCount);
-    audio.play();
+    //audio.play();
 }
 
 function setupTunnel() {
@@ -55,13 +68,19 @@ function setupTunnel() {
 
     // Creating the tunnel and adding it to the scene
     //                         numPoints, segments, radius, radiusSegments
-    geom = createTunnelGeometry(30, 512, 30, 80);
+    var geom = createTunnelGeometry(30, 512, 30, 80);
+
+
+
+
+
     tunnel = createTunnelMesh(geom);
+
     scene.add(tunnel);
 
 }
 
-createTunnelGeometry = function(nbPoints, segments, radius, radiusSegments) {
+function createTunnelGeometry(nbPoints, segments, radius, radiusSegments) {
     // Creating an array of points that we'll use for the spline creation
     var points = [];
     var previousPoint = new THREE.Vector3(0, 0, 0);
@@ -84,21 +103,26 @@ createTunnelGeometry = function(nbPoints, segments, radius, radiusSegments) {
     return new THREE.TubeGeometry(spline, segments, radius, radiusSegments, false);
 }
 
-function randomHexColor() {
-    return '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
-}
-
-var currentTunnelColor = "#ffffff";
-createTunnelMesh = function(geom) {
+function createTunnelMesh(geom) {
     //White
-    var material = new THREE.MeshBasicMaterial({ transparent: false, opacity: 1, side: THREE.DoubleSide, wireframe: true, color: currentTunnelColor });
-    //Multicolor test
-    //var material = new THREE.MeshNormalMaterial({transparent: false, opacity: 1, side:THREE.DoubleSide, wireframe: true});
+    var material = new THREE.MeshBasicMaterial({
+        transparent: false,
+        opacity: 1,
+        side: THREE.DoubleSide,
+        wireframe: false,
+        vertexColors: THREE.FaceColors
+    });
+
+    for (var i = 0; i < geom.faces.length; i++) {
+        geom.faces[i].color.setRGB(Math.random(), Math.random(), Math.random());
+    }
+
+    geom.colorsNeedUpdate = true;
 
     return new THREE.Mesh(geom, material);
 }
 
-render = function() {
+function render() {
 
     analyser.getByteFrequencyData(frequencyData);
     twoD.clearRect(0, 0, canvas.width, canvas.height);
@@ -108,18 +132,18 @@ render = function() {
         var bar_x = i * 3;
         var bar_width = 2;
         var bar_height = (frequencyData[i] / 2);
-        
+
         twoD.fillStyle = '#00CCFF';
 
-        if(bar_height > maxHeight){ //detect highest peaks?
+        if (bar_height > maxHeight) { //detect highest peaks?
             maxHeight = bar_height;
             twoD.fillStyle = '#FFCC00';
         }
-        
+
         twoD.fillRect(bar_x, canvas.height, bar_width, -bar_height);
     }
 
-    tunnel.material.color.setHex( 0x00ffff );
+    //tunnel.material.color.setHex(0xccff00);
     //console.log(frequencyData);
 
     if (cameraTravelledStep > 1 - cameraTravelIncrement) {
@@ -140,7 +164,7 @@ render = function() {
     webGLRenderer.render(scene, camera);
 }
 
-resize = function() {
+function resize() {
     webGLRenderer.setSize(window.innerWidth, window.innerHeight);
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
