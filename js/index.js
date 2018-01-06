@@ -112,9 +112,14 @@ function createTunnelMesh(geom) {
         wireframe: false,
         vertexColors: THREE.FaceColors
     });
-
+    
+    var currentColor;
     for (var i = 0; i < geom.faces.length; i++) {
-        geom.faces[i].color.setRGB(Math.random(), Math.random(), Math.random());
+        if (i % 160 == 0) {
+            currentColor = new THREE.Color(Math.random(), Math.random(), Math.random());
+        }
+        geom.faces[i].color = currentColor;
+
     }
 
     geom.colorsNeedUpdate = true;
