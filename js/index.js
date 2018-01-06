@@ -152,9 +152,10 @@ function render() {
     }
 
 
-    var sum = frequencyData.reduce((previous, current) => current += previous);
-    var avgVolume = sum / frequencyData.length;
-    avgVolume = avgVolume * 0.005;
+    var smoo = Smooth(frequencyData);
+    
+    var avgVolume = smoo(1) / frequencyData.length;
+    //avgVolume = avgVolume * 0.005;
     console.log(avgVolume);
 
     twoD.font = "30px Arial";
