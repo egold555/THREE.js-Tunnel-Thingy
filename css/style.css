@@ -1,0 +1,21 @@
+html, body {
+  margin: 0;
+  overflow: hidden;
+  background-color: black;
+}
+
+/*.Signature {
+  position: absolute;
+  z-index: 100;
+  bottom: 20px;
+  right: 20px;
+  color: white;
+  line-height: .2;
+  font-size: .7em;
+  font-family: Open Sans, sans-serif;
+}*/
+
+#analyser_render {
+  z-index: 1;  
+  position: absolute;
+}
