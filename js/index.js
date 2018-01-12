@@ -8,7 +8,7 @@
 /*global Uint8Array*/
 /*global requestAnimationFrame*/
 /*jsint node: true */
-
+/*global Smooth*/
 
 var canvas, twoD;
 
@@ -132,6 +132,7 @@ function pulse(twoD){
     //console.log("PULSE!");
     twoD.fillStyle = '#00FF00';
     twoD.fillText("█                         █", 10, 70);
+    cameraRotationStep  += (cameraRotationIncrement * 3);
 }
 
 var maxNum = 0;
