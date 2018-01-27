@@ -8,14 +8,18 @@
 </head>
 
 <body>
-
-    <audio id="myAudio" src="audio/Flume - Never Be Like You.mp3"></audio>
+    <div class="upload-btn-wrapper centered">
+        <button class="btn">Click to Upload Music</button>
+        <input type="file" id="input" accept="audio/x-mpeg"/>
+    </div>
+    <audio id="myAudio" class="ontop"></audio>
     <canvas id="analyser_render"></canvas>
     <div id="webgl-tunnel"></div>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.min.js'></script>
+    <script src='js/jquery.min.js'></script>
+    <script src='js/three.min.js'></script>
     <script src="js/index.js"></script>
     <script src="js/Smooth-0.1.7.js"></script>
+    <script src="js/stats.min.js"></script>
 </body>
 
 </html>

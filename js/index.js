@@ -19,10 +19,29 @@ var tunnel, scene, camera, webGLRenderer, cameraTravelledStep = 1, // Distance t
     spline, cameraTravelIncrement = 0.0002,
     cameraRotationIncrement = 0.0025;
 
+var stats;
+
 window.onload = function () {
 
-    audio = document.getElementById('myAudio');
-    setupAudioAnalizer(audio);
+    var input = document.getElementById('input');
+    input.onchange = function (e) {
+        audio = document.getElementById('myAudio');
+
+        audio.src = URL.createObjectURL(this.files[0]);
+        // not really needed in this exact case, but since it is really important in other cases,
+        // don't forget to revoke the blobURI when you don't need it
+        audio.onend = function (e) {
+            URL.revokeObjectURL(this.src);
+        }
+
+        $('.upload-btn-wrapper').hide();
+        loadStats();
+        setupAudioAnalizer(audio);
+        render(); //Start tunnel movement
+    }
+
+
+
 
     canvas = document.getElementById('analyser_render');
     twoD = canvas.getContext('2d');
@@ -30,14 +49,18 @@ window.onload = function () {
     setupTunnel();
 
 
-
     $(window).resize(function () {
         resize();
     });
 
-    render(); //Start tunnel movement
+
 }
 
+function loadStats() {
+    stats = new Stats();
+    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild(stats.dom);
+}
 
 
 function setupAudioAnalizer(audio) {
@@ -55,6 +78,8 @@ function setupAudioAnalizer(audio) {
     audio.play();
 }
 
+var geom;
+
 function setupTunnel() {
 
     // Creating the renderer
@@ -69,11 +94,7 @@ function setupTunnel() {
 
     // Creating the tunnel and adding it to the scene
     //                         numPoints, segments, radius, radiusSegments
-    var geom = createTunnelGeometry(30, 512, 30, 80);
-
-
-
-
+    geom = createTunnelGeometry(30, 512, 30, 80); //30, 512, 30, 80
 
     tunnel = createTunnelMesh(geom);
 
@@ -124,19 +145,50 @@ function createTunnelMesh(geom) {
     }
 
     geom.colorsNeedUpdate = true;
+    //geom.dynamic = true;
 
     return new THREE.Mesh(geom, material);
 }
 
-function pulse(twoD){
-    //console.log("PULSE!");
+function pulse() {
+
     twoD.fillStyle = '#00FF00';
     twoD.fillText("█                         █", 10, 70);
-    cameraRotationStep  += (cameraRotationIncrement * 3);
+
+    cameraRotationStep += (cameraRotationIncrement * 3);
+
+    //tunnel = createTunnelMesh(geom);
+
+
+    /*var r = Math.floor(Math.random() * 4);
+
+    switch(r) {
+        case 0:
+            
+            break;
+
+        case 1:
+            
+            break;
+
+        case 2:
+            
+            break;
+
+        case 3:
+            
+            break;
+
+    }*/
+
+
 }
 
 var maxNum = 0;
+
 function render() {
+
+    stats.begin();
 
     analyser.getByteFrequencyData(frequencyData);
     twoD.clearRect(0, 0, canvas.width, canvas.height);
@@ -157,17 +209,20 @@ function render() {
     }
 
 
+    //Shitty beat detection averagigng beats
     var smoo = Smooth(frequencyData);
-    
+
     var avgVolume = smoo(1) / frequencyData.length;
-    
+
     avgVolume = avgVolume + 0.7; //0.7
-    
+
     twoD.font = "30px Arial";
-    if(avgVolume > maxNum){maxNum = avgVolume;}
-    
-    if(avgVolume >= 0.9){
-        pulse(twoD);
+    if (avgVolume > maxNum) {
+        maxNum = avgVolume;
+    }
+
+    if (avgVolume >= 0.9) {
+        pulse();
     }
 
     twoD.fillStyle = '#FFCC00';
@@ -186,15 +241,18 @@ function render() {
 
     camera.rotation.z = -Math.PI / 2 + (Math.sin(cameraRotationStep) * Math.PI);
 
-    camera.zoom=avgVolume;
-    //camera.fov = avgVolume + 45;
+    camera.zoom = avgVolume;
+
     camera.updateProjectionMatrix();
+
+
 
     cameraTravelledStep += cameraTravelIncrement;
     cameraRotationStep += cameraRotationIncrement;
 
     requestAnimationFrame(render.bind(this));
     webGLRenderer.render(scene, camera);
+    stats.end();
 }
 
 function resize() {
